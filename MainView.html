@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图书馆管理系统 - 管理员登录与注册</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            color: #fff;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 26px; margin-bottom: 6px; }
+        .header p { font-size: 14px; opacity: 0.7; }
+
+        .tab-bar {
+            display: flex;
+            background: #f0f2f5;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .tab {
+            flex: 1; padding: 14px; text-align: center; cursor: pointer;
+            border: none; background: none; font-size: 16px; font-weight: 600;
+            color: #888; transition: all 0.3s;
+        }
+        .tab.active { color: #5a67d8; border-bottom: 3px solid #5a67d8; }
+
+        .form-panel { display: none; padding: 30px; }
+        .form-panel.active { display: block; }
+
+        h2 { color: #5a67d8; margin-bottom: 20px; font-size: 20px; }
+
+        .form-group { margin-bottom: 18px; }
+
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 14px; }
+        label .star { color: #e74c3c; }
+
+        input[type="text"], input[type="password"], input[type="email"],
+        input[type="date"], input[list], select {
+            width: 100%; padding: 11px 14px; border: 2px solid #e0e0e0;
+            border-radius: 8px; font-size: 15px; transition: border-color 0.3s;
+            outline: none;
+        }
+        input:focus, select:focus { border-color: #5a67d8; }
+
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
+
+        .radio-group, .check-group {
+            display: flex; flex-wrap: wrap; gap: 16px; margin-top: 4px;
+        }
+        .radio-item, .check-item {
+            display: flex; align-items: center; gap: 6px; font-size: 14px;
+        }
+
+        input[type="range"] { width: 100%; margin-top: 6px; }
+        .range-info { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-top: 3px; }
+
+        progress { width: 100%; height: 22px; border-radius: 11px; }
+        progress::-webkit-progress-bar { background: #f0f0f0; border-radius: 11px; }
+        progress::-webkit-progress-value { background: linear-gradient(90deg, #3498db, #2ecc71); border-radius: 11px; }
+
+        .progress-box { background: #f8f9fa; border-radius: 10px; padding: 16px; margin-bottom: 18px; }
+        .progress-box label { margin-bottom: 8px; }
+
+        .btn {
+            width: 100%; padding: 13px; border: none; border-radius: 8px;
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            color: #fff; font-size: 17px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(26,26,46,0.3); }
+
+        .msg { margin-top: 14px; padding: 10px; border-radius: 6px; text-align: center; font-size: 14px; }
+        .msg-error { background: #fdecea; color: #c0392b; border: 1px solid #e74c3c; }
+        .msg-success { background: #e8f8f5; color: #1e8449; border: 1px solid #2ecc71; }
+
+        .avatar-preview { text-align: center; margin-top: 8px; }
+        .avatar-preview img {
+            width: 90px; height: 90px; border-radius: 50%;
+            object-fit: cover; border: 3px solid #5a67d8;
+        }
+
+        .music-box {
+            margin-top: 8px; padding: 18px;
+            background: #f0f2f5; border-radius: 10px;
+        }
+        .music-box h3 { margin-bottom: 12px; font-size: 15px; color: #5a67d8; }
+        .music-row { display: flex; align-items: center; gap: 10px; }
+        .music-row input[type="range"] { flex: 1; }
+
+        .footer { text-align: center; padding: 16px; background: #f0f2f5; color: #888; font-size: 12px; border-top: 1px solid #e0e0e0; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>📚 图书馆管理系统</h1>
+        <p>管理员登录与注册</p>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('login', this)">🔑 登录</button>
+        <button class="tab" onclick="switchTab('register', this)">📝 注册</button>
+    </div>
+
+    <!-- ========== 登录面板 ========== -->
+    <div id="login-panel" class="form-panel active">
+        <h2>管理员登录</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginUsername"><span class="star">*</span> 用户名</label>
+                <input type="text" id="loginUsername" name="username" placeholder="请输入用户名" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword"><span class="star">*</span> 密码</label>
+                <input type="password" id="loginPassword" name="password" placeholder="请输入密码" required>
+            </div>
+            <div class="form-group">
+                <label for="loginRole"><span class="star">*</span> 角色</label>
+                <select id="loginRole" name="role" required>
+                    <option value="">-- 请选择角色 --</option>
+                    <option value="admin">系统管理员</option>
+                    <option value="librarian">图书管理员</option>
+                    <option value="supervisor">督导员</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">登 录</button>
+            <div id="loginMsg"></div>
+        </form>
+    </div>
+
+    <!-- ========== 注册面板 ========== -->
+    <div id="register-panel" class="form-panel">
+        <h2>管理员注册</h2>
+        <form id="registerForm">
+            <div class="row">
+                <div class="form-group">
+                    <label for="regUsername"><span class="star">*</span> 用户名</label>
+                    <input type="text" id="regUsername" name="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail"><span class="star">*</span> 邮箱</label>
+                    <input type="email" id="regEmail" name="email" placeholder="请输入邮箱" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="regPassword"><span class="star">*</span> 密码</label>
+                    <input type="password" id="regPassword" name="password" placeholder="至少6位" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="regConfirm"><span class="star">*</span> 确认密码</label>
+                    <input type="password" id="regConfirm" name="confirm" placeholder="再次输入密码" required>
+                </div>
+            </div>
+
+            <!-- 日期选择 -->
+            <div class="form-group">
+                <label for="regBirthday"><span class="star">*</span> 出生日期</label>
+                <input type="date" id="regBirthday" name="birthday" required>
+            </div>
+
+            <!-- 单选：性别 -->
+            <div class="form-group">
+                <label><span class="star">*</span> 性别</label>
+                <div class="radio-group">
+                    <div class="radio-item">
+                        <input type="radio" id="male" name="gender" value="male" required>
+                        <label for="male">男</label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="female" name="gender" value="female">
+                        <label for="female">女</label>
+                    </div>
+                    <div class="radio-item">
+                        <input type="radio" id="other" name="gender" value="other">
+                        <label for="other">其他</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 多选：兴趣爱好 -->
+            <div class="form-group">
+                <label><span class="star">*</span> 兴趣爱好</label>
+                <div class="check-group">
+                    <div class="check-item">
+                        <input type="checkbox" id="fiction" name="interests" value="小说">
+                        <label for="fiction">小说</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="science" name="interests" value="科普">
+                        <label for="science">科普</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="history" name="interests" value="历史">
+                        <label for="history">历史</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="tech" name="interests" value="技术">
+                        <label for="tech">技术</label>
+                    </div>
+                    <div class="check-item">
+                        <input type="checkbox" id="biography" name="interests" value="传记">
+                        <label for="biography">传记</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下拉选择：部门 -->
+            <div class="form-group">
+                <label for="regDept"><span class="star">*</span> 所属部门</label>
+                <select id="regDept" name="dept" required>
+                    <option value="">-- 请选择部门 --</option>
+                    <option value="admin">行政管理部</option>
+                    <option value="circulation">流通部</option>
+                    <option value="acquisition">采编部</option>
+                    <option value="reference">参考咨询部</option>
+                    <option value="tech">技术服务部</option>
+                </select>
+            </div>
+
+            <!-- datalist：会员类型 -->
+            <div class="form-group">
+                <label for="regMemType"><span class="star">*</span> 会员类型</label>
+                <input list="memTypes" id="regMemType" name="memtype" placeholder="请选择或输入会员类型" required>
+                <datalist id="memTypes">
+                    <option value="学生会员">
+                    <option value="教师会员">
+                    <option value="研究生会员">
+                    <option value="社会会员">
+                    <option value="终身会员">
+                    <option value="荣誉会员">
+                </datalist>
+            </div>
+
+            <!-- range滑块：工作经验 -->
+            <div class="form-group">
+                <label>图书馆工作经验: <strong id="expVal">0</strong> 年</label>
+                <input type="range" id="regExp" name="exp" min="0" max="30" value="0"
+                       oninput="document.getElementById('expVal').textContent = this.value">
+                <div class="range-info"><span>0年</span><span>15年</span><span>30年</span></div>
+            </div>
+
+            <!-- progress：注册进度 -->
+            <div class="progress-box">
+                <label>📊 注册进度</label>
+                <progress id="regProgress" value="0" max="100"></progress>
+                <div style="text-align:center; margin-top:6px; font-weight:600;" id="progressText">0%</div>
+            </div>
+
+            <!-- file：上传头像 -->
+            <div class="form-group">
+                <label for="avatarUpload">📷 上传头像</label>
+                <input type="file" id="avatarUpload" name="avatar" accept="image/*">
+                <div class="avatar-preview" id="avatarPreview"></div>
+            </div>
+
+            <button type="submit" class="btn">注 册</button>
+            <div id="regMsg"></div>
+        </form>
+    </div>
+
+    <!-- ========== 背景音乐 ========== -->
+    <div class="music-box">
+        <h3>🎵 背景音乐</h3>
+        <div class="form-group">
+            <label for="bgMusic">选择音乐文件:</label>
+            <input type="file" id="bgMusic" accept="audio/*" onchange="loadMusic()">
+        </div>
+        <button onclick="toggleMusic()" id="musicBtn" class="btn" style="width:auto; padding:8px 20px; font-size:14px;">▶ 播放</button>
+        <div class="music-row" style="margin-top:10px;">
+            <span>🔈</span>
+            <input type="range" id="musicVol" min="0" max="1" step="0.1" value="0.5" oninput="setVol()">
+            <span>🔊</span>
+            <span id="volText">50%</span>
+        </div>
+    </div>
+
+    <div class="footer">&copy; 2026 图书馆管理系统</div>
+</div>
+
+<audio id="bgAudio" loop></audio>
+
+<script>
+    // ========== 标签切换 ==========
+    function switchTab(name, btn) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(name + '-panel').classList.add('active');
+    }
+
+    // ========== 注册进度条 ==========
+    function updateProgress() {
+        const form = document.getElementById('registerForm');
+        const inputs = form.querySelectorAll('input:not([type="file"]):not([type="range"]), select');
+        let filled = 0, total = 0;
+        inputs.forEach(inp => {
+            total++;
+            if ((inp.type==='radio' && inp.checked) ||
+                (inp.type==='checkbox' && inp.checked) ||
+                (inp.type!=='radio' && inp.type!=='checkbox' && inp.value.trim()!=='')) {
+                filled++;
+            }
+        });
+        const pct = Math.round(filled / total * 100);
+        document.getElementById('regProgress').value = pct;
+        document.getElementById('progressText').textContent = pct + '%';
+    }
+    document.getElementById('registerForm').addEventListener('input', updateProgress);
+    document.getElementById('registerForm').addEventListener('change', updateProgress);
+
+    // ========== 头像预览 ==========
+    document.getElementById('avatarUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('avatarPreview');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => { preview.innerHTML = '<img src="' + ev.target.result + '" alt="头像预览">'; };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // ========== 登录提交 ==========
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const u = document.getElementById('loginUsername').value;
+        const p = document.getElementById('loginPassword').value;
+        const r = document.getElementById('loginRole').value;
+        if (!u || !p || !r) return showMsg('loginMsg', '请填写所有必填项！', 'error');
+        if (p.length < 6) return showMsg('loginMsg', '密码长度不能少于6位！', 'error');
+        showMsg('loginMsg', '登录成功！欢迎回来，' + u + '！', 'success');
+        setTimeout(() => alert('登录成功！\n用户：' + u + '\n角色：' + r), 800);
+    });
+
+    // ========== 注册提交 ==========
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username  = document.getElementById('regUsername').value;
+        const email     = document.getElementById('regEmail').value;
+        const password  = document.getElementById('regPassword').value;
+        const confirm   = document.getElementById('regConfirm').value;
+        const birthday  = document.getElementById('regBirthday').value;
+        const gender    = document.querySelector('input[name="gender"]:checked')?.value;
+        const dept      = document.getElementById('regDept').value;
+        const memType   = document.getElementById('regMemType').value;
+
+        if (!username || !email || !password || !confirm || !birthday || !gender || !dept || !memType)
+            return showMsg('regMsg', '请填写所有必填项！', 'error');
+        if (password !== confirm) return showMsg('regMsg', '两次输入的密码不一致！', 'error');
+        if (password.length < 6) return showMsg('regMsg', '密码长度不能少于6位！', 'error');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('regMsg', '请输入有效的邮箱地址！', 'error');
+
+        showMsg('regMsg', '注册成功！欢迎加入图书馆管理系统！', 'success');
+        setTimeout(() => alert('注册成功！\n\n用户名：' + username + '\n邮箱：' + email + '\n部门：' + dept + '\n会员类型：' + memType), 800);
+    });
+
+    function showMsg(id, msg, type) {
+        const el = document.getElementById(id);
+        el.innerHTML = '<div class="msg msg-' + type + '">' + msg + '</div>';
+    }
+
+    // ========== 背景音乐 ==========
+    let playing = false;
+    const audio = document.getElementById('bgAudio');
+
+    function loadMusic() {
+        const f = document.getElementById('bgMusic').files[0];
+        if (f) { audio.src = URL.createObjectURL(f); setVol(); }
+    }
+    function toggleMusic() {
+        const btn = document.getElementById('musicBtn');
+        if (playing) { audio.pause(); btn.textContent = '▶ 播放'; playing = false; }
+        else if (audio.src) {
+            audio.play().then(() => { btn.textContent = '⏸ 暂停'; playing = true; })
+                .catch(() => alert('无法播放，请检查文件格式'));
+        } else alert('请先选择音乐文件！');
+    }
+    function setVol() {
+        const v = document.getElementById('musicVol').value;
+        audio.volume = v;
+        document.getElementById('volText').textContent = Math.round(v * 100) + '%';
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => updateProgress());
+</script>
+</body>
+</html>
